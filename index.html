@@ -137,6 +137,15 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .ac-title{font-weight:600;font-size:14px;color:var(--navy);margin-bottom:5px}
 .ac-body{color:#555;font-size:13px;line-height:1.55}
 
+/* 30-day action panel */
+.thirty-day{background:var(--navy);border-radius:14px;padding:22px 20px;margin-bottom:22px;border:1.5px solid var(--gold)}
+.thirty-day-eyebrow{color:var(--gold);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;font-weight:600}
+.thirty-day-title{font-family:'Playfair Display',serif;font-size:18px;color:#fff;margin-bottom:14px;line-height:1.3}
+.thirty-day-list{display:grid;gap:10px}
+.thirty-day-item{display:flex;gap:12px;align-items:flex-start;color:rgba(255,255,255,0.85);font-size:13.5px;line-height:1.5}
+.thirty-day-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--gold);color:var(--navy);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;margin-top:1px}
+.thirty-day-text strong{color:#fff;font-weight:600}
+
 .compliance-box{background:rgba(26,26,46,0.04);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin:8px 0 18px;color:#666;font-size:12px;line-height:1.65}
 .compliance-box strong{color:var(--navy)}
 .step{display:none}.step.on{display:block}
@@ -267,8 +276,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <div class="sl-row"><span class="sl-label">Total years lived outside India</span><span class="sl-val" id="vYrs">14 yrs</span></div>
       <div class="sl-track"><div class="sl-fill" id="fYrs" style="width:42.9%"></div><input type="range" id="sYrs" min="2" max="30" value="14" step="1" oninput="slide('Yrs',+this.value)"></div>
       <p class="sl-hint" id="hRnor"></p>
+      <p style="color:var(--muted);font-size:11px;margin-top:6px;line-height:1.4;font-style:italic">⚠ This is a rough heuristic. Real RNOR status depends on your India day-count history over the prior 7 and 10 years, plus your residential status in those years. A CA must verify exact RNOR eligibility before you act on it.</p>
     </div>
-    <!-- GC years slider — only shown for gc_leave -->
     <div id="gcYrsGroup" class="sl-group" style="display:none">
       <div class="sl-row"><span class="sl-label">Years as a Green Card holder (last 15 years)</span><span class="sl-val" id="vGcYrs">8 yrs</span></div>
       <div class="sl-track"><div class="sl-fill" id="fGcYrs" style="width:49.3%"></div><input type="range" id="sGcYrs" min="1" max="15" value="8" step="1" oninput="slide('GcYrs',+this.value)"></div>
@@ -327,11 +336,11 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <button class="p-card" id="wt-lump" onclick="setWithdrawal('lump')" style="padding:12px 14px">
           <div>
             <div class="p-name" style="font-size:14px">Lump sum / large one-time distribution</div>
-            <div class="p-sub">Single large cash-out — likely US-taxable regardless of treaty</div>
+            <div class="p-sub">Single large cash-out — likely US-taxable regardless of treaty + bracket-stacking adds ~3pp</div>
           </div>
         </button>
       </div>
-      <p class="sl-hint" id="hWithdrawal" style="margin-top:10px">Periodic payments to Indian residents may qualify for residence-country taxation under treaty. Lump sums are usually treated as distributions, not pensions, and are more likely to remain US-taxable. This affects the treaty note on your results.</p>
+      <p class="sl-hint" id="hWithdrawal" style="margin-top:10px">Periodic payments to Indian residents may qualify for residence-country taxation under treaty. Lump sums lose bracket-spreading and likely remain US-taxable. This affects both the treaty note and the modeled NRA effective rate.</p>
     </div>
     <div class="btn-row">
       <button class="btn btn-back" onclick="goTo(1)">← Back</button>
@@ -344,14 +353,16 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     <p class="eyebrow">Your results</p>
     <h2 class="step-title" id="rTitle">Your plan</h2>
 
+    <p style="color:#7a5a10;background:#fff8e8;border:1px solid #f0d890;border-radius:8px;padding:9px 14px;font-size:12.5px;line-height:1.5;margin-bottom:14px;text-align:center"><strong>This is a planning estimate, not final filing math.</strong> Use it to choose between strategies — verify the actual numbers with a cross-border CPA / CA.</p>
+
     <div class="hero-card">
-      <p class="hero-eyebrow">Directional tax drag you could avoid</p>
+      <p class="hero-eyebrow">Directional tax drag you could avoid (vs. doing nothing)</p>
       <div class="hero-range" id="rSavRange">—</div>
       <div class="hero-inr" id="rSavINR">—</div>
       <div class="hero-driver">
         <strong>Why the gap exists:</strong> <span id="rDriverText">—</span>
         Based on flat-rate approximations — your actual numbers will differ.<br>
-        <span style="font-style:normal;opacity:.75">FTC benefit is estimated. Actual credit depends on how the income is classified and taxed in both countries — verify with a cross-border CPA. FTC benefit is partially applied in this model, not a full offset.</span>
+        <span style="font-style:normal;opacity:.8;color:#f0d080"><strong>FTC impact varies widely.</strong> This model assumes <strong>moderate</strong> offset, not guaranteed. Actual credit depends on income classification, limitation rules, carryforward, and your specific facts. Some users get near-full offset; others get little to none. Verify with a cross-border CPA.</span>
       </div>
     </div>
 
@@ -384,28 +395,37 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     <div class="alert-box amber" id="rothNote" style="display:none;font-size:13px;color:#555">
     </div>
 
-    <p style="color:var(--muted);font-size:11px;line-height:1.5;margin-bottom:10px;font-style:italic">These bars are illustrative comparisons only — not a tax calculation. Same projected balance, different tax treatment assumptions.</p>
-    <p class="sec-head" id="stratHead">Estimated tax cost comparison</p>
-    <div class="strat-row">
-      <div class="strat-top"><div><span class="strat-name" style="color:var(--red)">Cash out at return</span><span class="strat-sub">Liquidate entire balance at return date</span></div><span class="strat-cost" id="cS1">—</span></div>
-      <div class="bar-bg"><div class="bar-fill" id="bS1" style="background:var(--red)"></div></div>
-    </div>
-    <div class="strat-row">
-      <div class="strat-top"><div><span class="strat-name" style="color:var(--amber)">No planning</span><span class="strat-sub">Withdraw as ROR, no RNOR use</span></div><span class="strat-cost" id="cS2">—</span></div>
-      <div class="bar-bg"><div class="bar-fill" id="bS2" style="background:var(--amber)"></div></div>
-    </div>
-    <div class="strat-row">
-      <div class="strat-top"><div><span class="strat-name" style="color:var(--green)">Smart strategy</span><span class="strat-sub">Pre-departure MFJ conversions + RNOR window</span></div><span class="strat-cost" id="cS3" style="color:var(--green)">—</span></div>
-      <div class="bar-bg"><div class="bar-fill" id="bS3" style="background:var(--green)"></div></div>
-    </div>
-    <p id="penNote" style="color:var(--amber);font-size:12px;margin-top:4px;display:none">⚠ Cash-out-at-return figure includes 10% early withdrawal penalty — you're under 59½ at return.</p>
-    <p style="color:var(--muted);font-size:11px;margin-top:8px;line-height:1.5;font-style:italic;margin-bottom:16px">Flat effective-rate approximations only. Actual tax depends on bracket math, treaty position, state tax, RNOR day-count, and your specific facts. At ₹85/USD (illustrative).</p>
-
-    <div style="background:var(--gold-bg);border:1.5px solid var(--gold-dim);border-radius:12px;padding:14px 18px;margin-bottom:24px" id="anchorBox">
+    <!-- ANCHOR BOX — moved above bar chart -->
+    <div style="background:var(--gold-bg);border:1.5px solid var(--gold-dim);border-radius:12px;padding:14px 18px;margin-bottom:18px" id="anchorBox">
       <p style="color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">If you do only one thing</p>
       <p style="font-family:'Playfair Display',serif;font-size:16px;color:var(--navy);line-height:1.4" id="anchorText">—</p>
       <p style="color:var(--muted);font-size:12px;margin-top:6px;line-height:1.5" id="anchorSub">—</p>
     </div>
+
+    <!-- 30-DAY ACTION PANEL -->
+    <div class="thirty-day" id="thirtyDayBox">
+      <p class="thirty-day-eyebrow">⚡ If you had to act in 30 days</p>
+      <p class="thirty-day-title" id="thirtyDayTitle">Your shortlist</p>
+      <div class="thirty-day-list" id="thirtyDayList"></div>
+    </div>
+
+    <p style="color:var(--muted);font-size:11px;line-height:1.5;margin-bottom:10px;font-style:italic">These bars are illustrative comparisons only — not a tax calculation. Same projected balance, different tax treatment assumptions <strong>spread across multi-year withdrawal windows</strong>, not a single tax year.</p>
+    <p class="sec-head" id="stratHead">Estimated total tax drag if spread across planned windows</p>
+    <div class="strat-row">
+      <div class="strat-top"><div><span class="strat-name" style="color:var(--red)">Cash out at return</span><span class="strat-sub">Liquidate entire balance — single year hit</span></div><span class="strat-cost" id="cS1">—</span></div>
+      <div class="bar-bg"><div class="bar-fill" id="bS1" style="background:var(--red)"></div></div>
+    </div>
+    <div class="strat-row">
+      <div class="strat-top"><div><span class="strat-name" style="color:var(--amber)">No planning</span><span class="strat-sub">Withdraw as ROR over retirement, no RNOR use</span></div><span class="strat-cost" id="cS2">—</span></div>
+      <div class="bar-bg"><div class="bar-fill" id="bS2" style="background:var(--amber)"></div></div>
+    </div>
+    <div class="strat-row">
+      <div class="strat-top"><div><span class="strat-name" style="color:var(--green)">Smart strategy</span><span class="strat-sub">Pre-departure MFJ conversions + RNOR window, spread over years</span></div><span class="strat-cost" id="cS3" style="color:var(--green)">—</span></div>
+      <div class="bar-bg"><div class="bar-fill" id="bS3" style="background:var(--green)"></div></div>
+    </div>
+    <p style="color:#7a5a10;font-size:11px;margin-top:6px;line-height:1.5;background:#fff8e8;border:1px solid #f0d890;border-radius:8px;padding:8px 12px"><strong>What you're looking at:</strong> the lifetime tax drag on this balance under each strategy. Model assumes a ~10-year withdrawal period for &quot;no planning&quot; (s2), and a longer spread for &quot;smart strategy&quot; (pre-departure years + RNOR + ~10 retirement years). The "smart strategy" number is spread across all those years — not a single-year tax bill. The "cash out" figure is a one-shot hit.</p>
+    <p id="penNote" style="color:var(--amber);font-size:12px;margin-top:4px;display:none">⚠ Cash-out-at-return figure includes 10% early withdrawal penalty — you're under 59½ at return.</p>
+    <p style="color:var(--muted);font-size:11px;margin-top:8px;line-height:1.5;font-style:italic;margin-bottom:16px">Flat effective-rate approximations only. Actual tax depends on bracket math, treaty position, state tax, RNOR day-count, and your specific facts. At ₹85/USD (illustrative).</p>
 
     <!-- Action plan with phase labels -->
     <p class="sec-head">Your action plan</p>
@@ -413,7 +433,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 
     <div class="compliance-box">
       <strong>FATCA & CRS:</strong> Your custodian files a 1099-R for every distribution regardless of where you live. India participates in CRS — non-disclosure of foreign income carries real risk. Once you're ROR, file Schedule FA and Schedule FSI with your India ITR. Penalty for missing: ₹10 lakh under the Black Money Act.<br><br>
-      <strong>Not modelled:</strong> India surcharge above ₹50L · exact RNOR day-count (CA required) · Roth India tax treatment · NRA estate tax ($60K exemption vs. $13.6M for US residents) · PFIC exposure · Form 8854 exit-tax calculation.<br><br>
+      <strong>Not modelled:</strong> India surcharge above ₹50L · exact RNOR day-count (CA required) · Roth India tax treatment · NRA estate tax ($60K exemption vs. $13.6M for US residents) · PFIC exposure · Form 8854 exit-tax calculation · MFJ bracket-overflow on very large short-window conversions.<br><br>
       <strong>Not tax advice.</strong> Directional planning estimates only. Verify with a cross-border CPA / CA before acting.
     </div>
     <div style="text-align:center;margin-top:4px;margin-bottom:12px">
@@ -434,15 +454,14 @@ function setWithdrawal(type){
   document.getElementById('wt-lump').classList.toggle('sel', type==='lump');
   const h=document.getElementById('hWithdrawal');
   if(type==='lump'){
-    h.textContent='Lump-sum distributions are generally US-taxable under NRA rules regardless of the DTAA Article 20 periodic pension provision. The treaty note on your results will reflect this.';
+    h.textContent='Lump-sum distributions lose year-by-year bracket-spreading and stack into top federal brackets. The model bumps the NRA effective rate by ~7pp and the treaty note reflects this.';
     h.style.color='var(--amber)';
   } else {
-    h.textContent='Periodic payments to Indian residents may qualify for residence-country taxation under treaty. Lump sums are treated differently and likely remain US-taxable. This affects the treaty note on your results.';
+    h.textContent='Periodic payments to Indian residents may qualify for residence-country taxation under treaty. Lump sums lose bracket-spreading and likely remain US-taxable. This affects the treaty note on your results.';
     h.style.color='';
   }
 }
 
-// Fix 1+2: 2 bullets max, strong takeaway line, typical strategy stated upfront
 const QR={
   h1b:{
     strategy:'Convert before leaving. Then use RNOR window.',
@@ -544,7 +563,6 @@ function refreshHints(){
     [0, '⚠ Rough estimate: likely no RNOR window — pre-departure conversion is your main lever. Verify with a CA.']
   ];
   document.getElementById('hRnor').textContent=m.find(([n])=>S.yrs>=n)[1];
-  // GC years hint
   const hg=document.getElementById('hGcYrs');
   if(hg){
     if(S.gcYrs>=8){hg.textContent='⚠ 8+ years as LPR — potential covered-expatriate exposure under IRC §877A. Model your Form 8854 before abandoning.';hg.style.color='var(--amber)';}
@@ -563,40 +581,86 @@ function calc(){
   const rothR=S.roth*Math.pow(1.07,ytr);
   const penalty=isU59?0.10:0;
 
-  // India slab on withdrawal income (new regime FY25, rough marginal)
+  // FY25-26 new regime — slabs walked from base income to base+withdrawal
+  // Returns effective India rate ON THE WITHDRAWAL portion (correctly stacked).
+  // This fixes the prior bug where a $1M withdrawal on ₹0 base returned 0% India tax.
   const incRs = S.incL * 100000;
   function indiaMarginal(baseRs) {
     const slabs = [[300000,0],[700000,0.05],[1000000,0.10],[1200000,0.15],[1500000,0.20],[Infinity,0.30]];
-    let cum=0, top=0;
-    for(const [limit,rate] of slabs){
-      if(baseRs<=cum){top=rate;break;}
-      cum=limit; top=rate;
+    for (const [limit, rate] of slabs) {
+      if (baseRs <= limit) return rate * 1.04;
     }
-    return top * 1.04; // 4% cess
+    return 0.30 * 1.04;
   }
-  const indiaMargin = indiaMarginal(incRs);
+  // Stacked effective: walks slabs across [baseRs, baseRs+addRs] and returns avg rate on the addition.
+  function indiaEffOnAdd(baseRs, addRs) {
+    if (addRs <= 0) return 0;
+    const slabs = [[300000,0],[700000,0.05],[1000000,0.10],[1200000,0.15],[1500000,0.20],[Infinity,0.30]];
+    let prev = 0, totalTax = 0;
+    for (const [limit, rate] of slabs) {
+      const bot = Math.max(prev, baseRs);
+      const top = Math.min(limit, baseRs + addRs);
+      if (top > bot) totalTax += (top - bot) * rate;
+      prev = limit;
+      if (limit >= baseRs + addRs) break;
+    }
+    return (totalTax / addRs) * 1.04;
+  }
+  const FX = 85;
+  const indiaMargin = indiaMarginal(incRs); // kept for legacy display; not used in tax calc anymore
+
+  // Lump sum loses bracket-spreading + adds NIIT/surcharge exposure on big amounts
+  const lumpBump = (S.withdrawalType === 'lump') ? 0.07 : 0;
 
   let s1,s2,s3lo,s3hi,driverText,indiaNote;
 
   if(S.visa==='h1b'||S.visa==='gc_leave'||S.visa==='nra'){
-    const nraEffective = 0.31;
+    const nraEffective = 0.31 + lumpBump;
     const mfjEffective = 0.22 + (S.incL>30?0.02:0);
-    s1   = tradR*(0.33+penalty);
+    // Cash-out: bracket stacking on big balances. Single-year liquidation pushes into top federal brackets.
+    //   <300K → moderate          (28% over 59½, 38% under with penalty)
+    //   300–800K → top of 24-32%  (32% over 59½, 42% under)
+    //   >800K → 37% federal + NIIT 3.8% + state ≈ 38–40% (over 59½), 48% under
+    let cashOutBase;
+    if (tradR >= 800000)      cashOutBase = 0.38;
+    else if (tradR >= 300000) cashOutBase = 0.32;
+    else                       cashOutBase = 0.28;
+    s1   = tradR*(cashOutBase+penalty);
     s2   = tradR*nraEffective;
     s3lo = tradR*mfjEffective;
     s3hi = tradR*(mfjEffective-0.04);
-    const ftcBenefit = Math.min(indiaMargin, nraEffective) * 0.3;
-    s2  -= tradR*ftcBenefit*0.5;
-    s3lo -= tradR*ftcBenefit;
-    s3hi -= tradR*ftcBenefit;
+    // Per-strategy India tax: depends on withdrawal spread, which determines slab stacking.
+    //   s2: full ROR, ~10y retirement spread → larger annual stack → higher India effective rate
+    //   s3: pre-departure conversions + RNOR + post-RNOR spread (ytr+rnor+10) → much lower per-year stack
+    const yrSpread_s2 = 10;
+    const yrSpread_s3 = ytr + rnor + 10;
+    const perYr_s2_inr = (tradR * FX) / yrSpread_s2;
+    const perYr_s3_inr = (tradR * FX) / yrSpread_s3;
+    const indiaEff_s2 = indiaEffOnAdd(incRs, perYr_s2_inr);
+    const indiaEff_s3 = indiaEffOnAdd(incRs, perYr_s3_inr);
+    // FTC offsets where US and India both tax. Conservative: 30% of overlap.
+    const ftcBenefit_s2 = Math.min(indiaEff_s2, nraEffective) * 0.3;
+    const ftcBenefit_s3 = Math.min(indiaEff_s3, nraEffective) * 0.3;
+    s2 -= tradR*ftcBenefit_s2;
+    // s3 mostly avoids India tax (pre-departure conversions + RNOR shielding) → only 30% of the FTC haircut
+    s3lo -= tradR*ftcBenefit_s3*0.3;
+    s3hi -= tradR*ftcBenefit_s3*0.3;
+    // BUT: India-side tax stacking the NRA-effective doesn't capture, AFTER FTC overlap.
+    // Note: FTC already represents US-India overlap, so additional India add-back is partial only.
+    //   s2 (full ROR): 0.25 of India effective gets through after FTC + treaty mechanics
+    //   s3 (RNOR + pre-departure): 0.20 of India effective, scaled by non-RNOR years (RNOR years exempt)
+    s2  += tradR * indiaEff_s2 * 0.25;
+    const rnorShield = Math.max(0, (yrSpread_s3 - rnor) / yrSpread_s3);
+    s3lo += tradR * indiaEff_s3 * 0.20 * rnorShield;
+    s3hi += tradR * indiaEff_s3 * 0.20 * rnorShield;
     s2 = Math.max(s2, tradR*0.15);
     s3lo = Math.max(s3lo, tradR*0.12);
     s3hi = Math.max(s3hi, tradR*0.10);
     driverText = S.visa==='nra'
-      ? 'Pre-departure window is closed. Spreading withdrawals across years (22–28% effective) vs. large lump sums at 31%+ NRA rate. India FTC partially offsets double tax on periodic payments.'
-      : 'Converting at MFJ rates before leaving vs. withdrawing as an NRA with no standard deduction. India FTC on periodic pension withdrawals partially offsets double tax — lump sums treated differently.';
-    indiaNote = indiaMargin > 0.20
-      ? '⚠ Your India income level means withdrawals will be taxed at a higher rate in India — FTC benefit is greater, but so is India-side exposure on large 401k distributions.'
+      ? 'Pre-departure window is closed. Spreading withdrawals across years (22–28% effective) vs. large lump sums at 31%+ NRA rate. India tax stacks on top of base income — large annual withdrawals push into 30% slab. FTC partially offsets where both countries tax.'
+      : 'Converting at MFJ rates before leaving vs. withdrawing as an NRA with no standard deduction. India tax stacks: large annual withdrawals reach 30% slab even on low base income. FTC partially offsets — verify with a CPA.';
+    indiaNote = indiaEff_s2 > 0.20
+      ? '⚠ Your withdrawal size + India base income stacks deep into India slabs (effective ' + Math.round(indiaEff_s2*100) + '% on the withdrawal portion). FTC reduces double tax but doesn\'t eliminate the India side. Consider longer-spread withdrawals.'
       : null;
   } else if(S.visa==='gc_keep'){
     s1   = tradR*(0.30+penalty);
@@ -627,7 +691,7 @@ function calc(){
     s1,s2,s3:(s3lo+s3hi)/2,
     savingLo,savingHi,driverText,indiaNote,rothNote,
     savingINR:((savingLo+savingHi)/2)*85,
-    preConv:Math.min(tradR*0.45,ytr*75000),
+    preConv:Math.min(tradR*0.45,ytr*90000),
     rnorConv:rnor>0?Math.min(tradR*0.35,rnor*110000):0,
     isUSC:S.visa==='usc',isExitRisk,
     nraApplies:S.visa==='h1b'||S.visa==='gc_leave'||S.visa==='nra'};
@@ -665,7 +729,7 @@ function showResults(){
   if(r.nraApplies && S.visa!=='nra'){
     tEl.style.display='block';
     if(S.withdrawalType==='lump'){
-      tBody.textContent='You selected lump-sum / large distributions. These are generally US-taxable under NRA rules — DTAA Article 20 periodic pension treatment likely does not apply to a single large cash-out. Conservative model (full US NRA tax) is appropriate here.';
+      tBody.textContent='You selected lump-sum / large distributions. These are generally US-taxable under NRA rules — DTAA Article 20 periodic pension treatment likely does not apply to a single large cash-out. Model adds ~7pp for bracket stacking and possible surcharge effects. Verify with a CPA.';
     } else {
       tBody.textContent='You selected periodic withdrawals. DTAA Article 20 may treat periodic pension payments differently from lump-sum distributions — depending on characterization, source, and treaty position. Periodic IRA distributions to Indian residents may be treated differently under the treaty, but this is not guaranteed. This tool uses a conservative combined rate — verify with a cross-border CPA before relying on treaty treatment.';
     }
@@ -681,19 +745,93 @@ function showResults(){
     document.getElementById('bS3').style.width=(r.s3/mx*100)+'%';
   },300);
   document.getElementById('penNote').style.display=r.isU59?'block':'none';
-  // Fix 2: visa-specific anchor box
+
+  // Anchor box — visa-specific, with post-59½ tone shift
   const anchorMap = {
     h1b:     ['Do your conversions before you leave.', 'Once you become an NRA you lose MFJ brackets and the standard deduction permanently. That window closes the day you leave.'],
     gc_leave:['Do your conversions before you surrender your GC.', 'Same logic as H-1B — MFJ brackets and the $32,200 standard deduction disappear once you become an NRA. Convert first, then leave.'],
     gc_keep: ['Convert in lower-income years while your brackets are favorable.', 'You stay a US taxpayer after moving — there is no departure deadline. But RMDs at 73 will force large withdrawals at high rates. Convert while you control the timing.'],
     usc:     ['Convert in lower-income years — and file Form 67 in India every year.', 'You file US taxes forever. The FTC is your only double-tax protection. Miss Form 67 once and you lose the credit for that year.'],
-    nra:     ['Spread your withdrawals — do not take large lump sums.', 'The pre-departure conversion window is closed. Your best lever now is withdrawal sequencing: smaller annual distributions stay in lower NRA brackets. A $300K lump sum is taxed at marginal NRA rates with no deduction. $60K/year for 5 years is not.'],
+    nra:     ['Spread your withdrawals — do not take large lump sums.', 'The pre-departure conversion window is closed. Your best lever now is withdrawal sequencing: smaller annual distributions stay in lower NRA brackets.'],
   };
-  const [at, as_] = anchorMap[S.visa] || anchorMap.h1b;
+  // Override for over-59½ H-1B/GC-leave: less urgency, more sequencing
+  let [at, as_] = anchorMap[S.visa] || anchorMap.h1b;
+  if (!r.isU59 && (S.visa==='h1b' || S.visa==='gc_leave')) {
+    at = 'Sequence your withdrawals — penalty pressure is gone, planning still matters.';
+    as_ = 'Past 59½ means no 10% early-withdrawal penalty. Focus shifts to spreading distributions across years to stay in lower NRA brackets, and using your RNOR window for India-side relief on Roth conversions.';
+  }
   document.getElementById('anchorText').textContent = at;
   document.getElementById('anchorSub').textContent  = as_;
 
+  // 30-day action panel
+  build30DayPanel(r);
+
   buildActions(r); goTo(3);
+}
+
+function build30DayPanel(r) {
+  const titleMap = {
+    h1b: 'Your H-1B / L-1 shortlist',
+    gc_keep: 'Your GC-keep shortlist',
+    gc_leave: 'Your GC-abandon shortlist',
+    usc: 'Your US-citizen shortlist',
+    nra: 'Your NRA shortlist (already returned)',
+  };
+  document.getElementById('thirtyDayTitle').textContent = titleMap[S.visa] || 'Your shortlist';
+
+  let items = [];
+  if (S.visa === 'h1b' || S.visa === 'gc_leave') {
+    items = [
+      ['Roll 401k → Rollover IRA at Schwab or Fidelity. Update address before you leave.', null],
+      [`Convert as much as fits in the 24% MFJ bracket this year. Target: ~${fU(Math.min(r.tradR*0.15, 75000))} this tax year.`, null],
+      ['File W-8BEN with your custodian on or after departure (declares NRA status, drops dividend withholding 30%→25%).', null],
+      ['Do not cash out at return. Penalty + NRA rates ≈ 43% of balance gone. Take periodic withdrawals instead.', 'urgent'],
+      [r.rnor > 0
+        ? `Use your ~${r.rnor}-year RNOR window for any remaining Roth conversions — many types of foreign income are not taxed in India during RNOR.`
+        : 'No RNOR window estimated. Pre-departure conversions are your main lever — do not delay.',
+       null],
+    ];
+    if (S.visa === 'gc_leave' && S.gcYrs >= 8) {
+      items.unshift(['🚨 Hire a cross-border CPA to model IRC §877A before you file the I-407. This is non-optional with 8+ years GC.', 'urgent']);
+      items.pop(); // keep to 5
+    }
+  } else if (S.visa === 'gc_keep') {
+    items = [
+      ['Roll 401k → Rollover IRA. Keep US address — you remain a US tax resident.', null],
+      ['Plan conversions for low-income years before RMDs hit at 73. The FTC will offset India tax on the same income.', null],
+      ['File Form 67 with India ITR every year after return — without it, India denies the FTC for that year.', 'urgent'],
+      ['Do not trigger early withdrawal under 59½. The 10% penalty stings even with FTC.', null],
+      ['Hire a cross-border CPA who handles both 1040 and Indian ITR — not separate practitioners working in isolation.', null],
+    ];
+  } else if (S.visa === 'usc') {
+    items = [
+      ['Roll 401k → Rollover IRA. Update address strategy with your CPA.', null],
+      ['Plan conversions for low-income years — your only structural lever as a USC.', null],
+      ['File Form 67 with India ITR every year — the FTC is your only double-tax protection.', 'urgent'],
+      ['Reject any advisor suggesting "India-only treaty" treatment. The Savings Clause makes this unavailable to USCs.', 'urgent'],
+      ['Hire a cross-border CPA before your first India ITR. Coordinate Form 1116 (US) with Form 67 (India).', null],
+    ];
+  } else if (S.visa === 'nra') {
+    items = [
+      ['File W-8BEN with your custodian today if not done. Drops dividend withholding 30%→25%.', 'urgent'],
+      ['Spread distributions — small annual withdrawals stay in lower NRA brackets. Avoid lump sums.', null],
+      [r.rnor > 0
+        ? `If still inside RNOR, do remaining Roth conversions now — confirm exact RNOR end date with a CA.`
+        : 'RNOR likely ended. Now you face full ROR taxation in India — file Form 67 every year for FTC.',
+       null],
+      ['File Form 67 with India ITR annually to claim FTC — without it, India denies the credit.', 'urgent'],
+      ['Roll any remaining 401k from old employers to a Rollover IRA — simpler reporting, better account flexibility.', null],
+    ];
+  }
+
+  document.getElementById('thirtyDayList').innerHTML = items.map((it, i) => {
+    const [text, flag] = it;
+    const numStyle = flag === 'urgent' ? 'background:var(--red);color:#fff' : '';
+    return `<div class="thirty-day-item">
+      <span class="thirty-day-num" style="${numStyle}">${i+1}</span>
+      <span class="thirty-day-text">${text}</span>
+    </div>`;
+  }).join('');
 }
 
 function phaseLabel(text){
@@ -705,7 +843,6 @@ function buildActions(r){
   const isNRA = S.visa==='h1b' || S.visa==='gc_leave' || S.visa==='nra';
   const isUSResident = S.visa==='gc_keep' || S.visa==='usc';
 
-  // ── NRA — already returned: different phase structure ──
   if(S.visa==='nra'){
     html+=phaseLabel('Right now — you are already NRA');
 
@@ -742,14 +879,13 @@ function buildActions(r){
     return;
   }
 
-  // ── Phase 1: Before leaving ──
   html+=phaseLabel('Before leaving');
 
   if(isNRA){
     if(r.ytr>=2){
       html+=card('📈','Now → '+r.yr,false,
         'Convert before you leave — this is your cheapest tax window',
-        'You have '+r.ytr+' year'+(r.ytr!==1?'s':'')+' filing as a US resident with MFJ brackets and the $32,200 standard deduction (2026). Once you leave permanently and become an NRA, you file 1040-NR — Single brackets, no standard deduction. That\'s 7–10% more tax on the same conversion amount. Target the 24% bracket. Aim for ~'+fU(r.preConv)+' total, paid from cash outside the account.');
+        'You have '+r.ytr+' year'+(r.ytr!==1?'s':'')+' filing as a US resident with MFJ brackets and the $32,200 standard deduction (2026). Once you leave permanently and become an NRA, you file 1040-NR — Single brackets, no standard deduction. That\'s 7–10% more tax on the same conversion amount. Target the 24% MFJ bracket (caps around $383K total income — leaves ~$90K/year of conversion headroom for typical earners). Aim for ~'+fU(r.preConv)+' total over your remaining US years, paid from cash outside the account.');
     } else {
       html+=card('⚡','Urgent — returning soon',false,
         'Maximize conversions before you leave',
@@ -787,7 +923,6 @@ function buildActions(r){
       'Consolidate via ACATS in-kind (not a taxable event — preserves cost basis).');
   }
 
-  // ── Phase 2: During RNOR (if applicable) ──
   if(r.rnor>0){
     html+=phaseLabel('During estimated RNOR window (~'+r.yr+'–'+r.rnorEnd+', rough)');
 
@@ -804,7 +939,6 @@ function buildActions(r){
       'Section 89A provides that income from notified foreign retirement accounts (including US 401k/IRA) may receive deferred or spread treatment in India. The election timing is critical — it should be made before your first ITR that includes retirement account income, not after. The exact mechanics — including which accounts qualify, irrevocability, and interaction with your specific facts — require a CA to review. Do not file your first ROR return without engaging a CA who knows cross-border retirement income.');
   }
 
-  // ── Phase 3: After RNOR / as ROR ──
   html+=phaseLabel('After RNOR — as ROR in India');
 
   html+=card('📋','Every year as ROR',false,
