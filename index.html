@@ -313,6 +313,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <div class="sl-row"><span class="sl-label">India income after return (₹ lakhs / year)</span><span class="sl-val" id="vInc">₹15L</span></div>
       <div class="sl-track"><div class="sl-fill" id="fInc" style="width:25%"></div><input type="range" id="sInc" min="0" max="60" value="15" step="1" oninput="slide('Inc',+this.value)"></div>
       <p class="sl-hint">Determines which India slab your 401k withdrawals fall into. Surcharge above ₹50L is not modelled. <strong style="color:var(--amber)">Note:</strong> withdrawals stack on top of this income and may push you into higher slabs.</p>
+      <p style="color:var(--muted);font-size:11px;margin-top:6px;line-height:1.4;font-style:italic">Model assumes a ~10-year withdrawal period for the no-planning path, unless extended by pre-departure conversions and RNOR planning.</p>
     </div>
 
     <div class="sl-group">
@@ -336,7 +337,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <button class="p-card" id="wt-lump" onclick="setWithdrawal('lump')" style="padding:12px 14px">
           <div>
             <div class="p-name" style="font-size:14px">Lump sum / large one-time distribution</div>
-            <div class="p-sub">Single large cash-out — likely US-taxable regardless of treaty + bracket-stacking adds ~3pp</div>
+            <div class="p-sub">Single large cash-out — likely US-taxable regardless of treaty + bracket-stacking adds ~7pp</div>
           </div>
         </button>
       </div>
@@ -362,7 +363,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <div class="hero-driver">
         <strong>Why the gap exists:</strong> <span id="rDriverText">—</span>
         Based on flat-rate approximations — your actual numbers will differ.<br>
-        <span style="font-style:normal;opacity:.8;color:#f0d080"><strong>FTC impact varies widely.</strong> This model assumes <strong>moderate</strong> offset, not guaranteed. Actual credit depends on income classification, limitation rules, carryforward, and your specific facts. Some users get near-full offset; others get little to none. Verify with a cross-border CPA.</span>
+        <span style="font-style:normal;opacity:.8;color:#f0d080"><strong>FTC impact varies widely.</strong> This model assumes <strong>moderate partial usability</strong>, not guaranteed. FTC may be unusable in some years due to limitation rules, income classification, timing, carryforward limits, and your specific facts. Some users get near-full offset; others get little to none. Verify with a cross-border CPA.</span>
       </div>
     </div>
 
@@ -615,7 +616,6 @@ function calc(){
   let s1,s2,s3lo,s3hi,driverText,indiaNote;
 
   if(S.visa==='h1b'||S.visa==='gc_leave'||S.visa==='nra'){
-    const nraEffective = 0.31 + lumpBump;
     const mfjEffective = 0.22 + (S.incL>30?0.02:0);
     // Cash-out: bracket stacking on big balances. Single-year liquidation pushes into top federal brackets.
     //   <300K → moderate          (28% over 59½, 38% under with penalty)
@@ -625,19 +625,27 @@ function calc(){
     if (tradR >= 800000)      cashOutBase = 0.38;
     else if (tradR >= 300000) cashOutBase = 0.32;
     else                       cashOutBase = 0.28;
-    s1   = tradR*(cashOutBase+penalty);
-    s2   = tradR*nraEffective;
-    s3lo = tradR*mfjEffective;
-    s3hi = tradR*(mfjEffective-0.04);
-    // Per-strategy India tax: depends on withdrawal spread, which determines slab stacking.
+
+    // Per-strategy India tax depends on withdrawal spread, which determines slab stacking.
     //   s2: full ROR, ~10y retirement spread → larger annual stack → higher India effective rate
     //   s3: pre-departure conversions + RNOR + post-RNOR spread (ytr+rnor+10) → much lower per-year stack
     const yrSpread_s2 = 10;
     const yrSpread_s3 = ytr + rnor + 10;
+    const perYr_s2_usd = tradR / yrSpread_s2;
     const perYr_s2_inr = (tradR * FX) / yrSpread_s2;
     const perYr_s3_inr = (tradR * FX) / yrSpread_s3;
     const indiaEff_s2 = indiaEffOnAdd(incRs, perYr_s2_inr);
     const indiaEff_s3 = indiaEffOnAdd(incRs, perYr_s3_inr);
+
+    // NRA effective rate is stepped by annual withdrawal size instead of one flat number.
+    // Smaller withdrawals stay closer to 22–28%; large annual withdrawals climb toward 32%+.
+    const nraBaseEffective = perYr_s2_usd >= 80000 ? 0.32 : perYr_s2_usd >= 40000 ? 0.30 : 0.28;
+    const nraEffective = nraBaseEffective + lumpBump;
+
+    s1   = tradR*(cashOutBase+penalty);
+    s2   = tradR*nraEffective;
+    s3lo = tradR*mfjEffective;
+    s3hi = tradR*(mfjEffective-0.04);
     // FTC offsets where US and India both tax. Conservative: 30% of overlap.
     const ftcBenefit_s2 = Math.min(indiaEff_s2, nraEffective) * 0.3;
     const ftcBenefit_s3 = Math.min(indiaEff_s3, nraEffective) * 0.3;
@@ -648,11 +656,11 @@ function calc(){
     // BUT: India-side tax stacking the NRA-effective doesn't capture, AFTER FTC overlap.
     // Note: FTC already represents US-India overlap, so additional India add-back is partial only.
     //   s2 (full ROR): 0.25 of India effective gets through after FTC + treaty mechanics
-    //   s3 (RNOR + pre-departure): 0.20 of India effective, scaled by non-RNOR years (RNOR years exempt)
+    //   s3 (RNOR + pre-departure): 0.23 of India effective, scaled by non-RNOR years (RNOR years partially shield)
     s2  += tradR * indiaEff_s2 * 0.25;
     const rnorShield = Math.max(0, (yrSpread_s3 - rnor) / yrSpread_s3);
-    s3lo += tradR * indiaEff_s3 * 0.20 * rnorShield;
-    s3hi += tradR * indiaEff_s3 * 0.20 * rnorShield;
+    s3lo += tradR * indiaEff_s3 * 0.23 * rnorShield;
+    s3hi += tradR * indiaEff_s3 * 0.23 * rnorShield;
     s2 = Math.max(s2, tradR*0.15);
     s3lo = Math.max(s3lo, tradR*0.12);
     s3hi = Math.max(s3hi, tradR*0.10);
@@ -691,7 +699,7 @@ function calc(){
     s1,s2,s3:(s3lo+s3hi)/2,
     savingLo,savingHi,driverText,indiaNote,rothNote,
     savingINR:((savingLo+savingHi)/2)*85,
-    preConv:Math.min(tradR*0.45,ytr*90000),
+    preConv:Math.min(tradR*0.45,ytr*120000),
     rnorConv:rnor>0?Math.min(tradR*0.35,rnor*110000):0,
     isUSC:S.visa==='usc',isExitRisk,
     nraApplies:S.visa==='h1b'||S.visa==='gc_leave'||S.visa==='nra'};
@@ -785,7 +793,7 @@ function build30DayPanel(r) {
       ['Roll 401k → Rollover IRA at Schwab or Fidelity. Update address before you leave.', null],
       [`Convert as much as fits in the 24% MFJ bracket this year. Target: ~${fU(Math.min(r.tradR*0.15, 75000))} this tax year.`, null],
       ['File W-8BEN with your custodian on or after departure (declares NRA status, drops dividend withholding 30%→25%).', null],
-      ['Do not cash out at return. Penalty + NRA rates ≈ 43% of balance gone. Take periodic withdrawals instead.', 'urgent'],
+      ['Do not cash out at return. Around 40–45% can disappear depending on state, bracket stacking, and penalty. Take periodic withdrawals instead.', 'urgent'],
       [r.rnor > 0
         ? `Use your ~${r.rnor}-year RNOR window for any remaining Roth conversions — many types of foreign income are not taxed in India during RNOR.`
         : 'No RNOR window estimated. Pre-departure conversions are your main lever — do not delay.',
@@ -885,7 +893,7 @@ function buildActions(r){
     if(r.ytr>=2){
       html+=card('📈','Now → '+r.yr,false,
         'Convert before you leave — this is your cheapest tax window',
-        'You have '+r.ytr+' year'+(r.ytr!==1?'s':'')+' filing as a US resident with MFJ brackets and the $32,200 standard deduction (2026). Once you leave permanently and become an NRA, you file 1040-NR — Single brackets, no standard deduction. That\'s 7–10% more tax on the same conversion amount. Target the 24% MFJ bracket (caps around $383K total income — leaves ~$90K/year of conversion headroom for typical earners). Aim for ~'+fU(r.preConv)+' total over your remaining US years, paid from cash outside the account.');
+        'You have '+r.ytr+' year'+(r.ytr!==1?'s':'')+' filing as a US resident with MFJ brackets and the $32,200 standard deduction (2026). Once you leave permanently and become an NRA, you file 1040-NR — Single brackets, no standard deduction. That\'s 7–10% more tax on the same conversion amount. Target the 24% MFJ bracket (caps around $383K total income — leaves roughly $90K–$120K/year of conversion headroom for many typical earners). Aim for ~'+fU(r.preConv)+' total over your remaining US years, paid from cash outside the account.');
     } else {
       html+=card('⚡','Urgent — returning soon',false,
         'Maximize conversions before you leave',
